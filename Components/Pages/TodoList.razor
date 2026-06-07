@@ -1,0 +1,47 @@
+﻿@page "/todo"
+@rendermode InteractiveServer
+
+<h3>To-Do List</h3>
+
+<div class="todo-input-row">
+    <input type="text"
+           class="todo-input"
+           placeholder="Enter a task..."
+           value="@newTask"
+           @oninput="@(e => newTask = e.Value.ToString())" />
+    <button class="btn btn-primary" @onclick="AddTask">Add Task</button>
+    <button class="btn btn-danger" @onclick="ClearAll">Clear All</button>
+</div>
+
+@if (tasks.Count == 0)
+{
+    <p class="no-tasks">No tasks yet. Add one above!</p>
+}
+else
+{
+    <ul class="task-list">
+        @foreach (var task in tasks)
+        {
+            <li class="task-item">@task</li>
+        }
+    </ul>
+}
+
+@code {
+    private string newTask = string.Empty;
+    private List<string> tasks = new List<string>();
+
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask))
+        {
+            tasks.Add(newTask.Trim());
+            newTask = string.Empty;
+        }
+    }
+
+    private void ClearAll()
+    {
+        tasks.Clear();
+    }
+}

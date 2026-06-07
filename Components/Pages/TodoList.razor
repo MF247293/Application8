@@ -4,225 +4,224 @@
 @using Application08_TodoDB.Data
 @inject AppDbContext Db
 
-<div class="todo-wrapper">
-    <div class="todo-header">
-        <h2>📝 To-Do List</h2>
-        <p class="subtitle">Tasks are saved to SQL Server database</p>
+<div class="page-bg">
+    <div class="topbar">
+        <span class="topbar-title">To-Do List</span>
+        <span class="db-badge">SQL Server Connected</span>
     </div>
 
-    <div class="todo-input-row">
-        <input type="text"
-               @bind="newTask"
-               @bind:event="oninput"
-               @onkeypress="HandleKeyPress"
-               placeholder="Enter a task and press Enter or click Add..."
-               class="todo-input" />
-        <button class="btn-add" @onclick="AddTask">➕ Add Task</button>
-        <button class="btn-clear" @onclick="ClearAll">🗑 Clear All</button>
-    </div>
-
-    <div class="task-stats">
-        <span>Total: <strong>@tasks.Count</strong></span>
-        <span>Completed: <strong>@tasks.Count(t => t.IsComplete)</strong></span>
-        <span>Pending: <strong>@tasks.Count(t => !t.IsComplete)</strong></span>
-    </div>
-
-    @if (tasks.Count == 0)
-    {
-        <div class="empty-state">
-            <p>✅ No tasks yet. Add one above!</p>
+    <div class="content-area">
+        <div class="stats-row">
+            <div class="stat-card blue">
+                <div class="stat-label">Total Tasks</div>
+                <div class="stat-value">@tasks.Count</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value">@tasks.Count(t => t.IsComplete)</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value">@tasks.Count(t => !t.IsComplete)</div>
+            </div>
         </div>
-    }
-    else
-    {
-        <ul class="task-list">
-            @foreach (var task in tasks)
-            {
-                <li class="task-item @(task.IsComplete ? "completed" : "")">
-                    <input type="checkbox"
-                           class="task-checkbox"
-                           checked="@task.IsComplete"
-                           @onchange="() => ToggleComplete(task)" />
-                    <span class="task-text">@task.TaskDescription</span>
-                    <span class="task-date">@task.CreatedAt.ToString("MMM dd, yyyy")</span>
-                    <button class="btn-delete" @onclick="() => DeleteTask(task)">
-                        🗑 Delete
-                    </button>
-                </li>
-            }
-        </ul>
-    }
+
+        <div class="input-card">
+            <input type="text"
+                   @bind="newTask"
+                   @bind:event="oninput"
+                   @onkeypress="HandleKeyPress"
+                   placeholder="Enter a task and press Enter or click Add..."
+                   class="task-input" />
+            <button class="btn-add" @onclick="AddTask">+ Add Task</button>
+            <button class="btn-clear" @onclick="ClearAll">Clear All</button>
+        </div>
+
+        @if (tasks.Count == 0)
+        {
+            <div class="empty-box">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+                <p>No tasks yet. Add one above!</p>
+            </div>
+        }
+        else
+        {
+            <div class="task-card">
+                @foreach (var task in tasks)
+                {
+                    <div class="task-row @(task.IsComplete ? "done" : "")">
+                        <input type="checkbox"
+                               class="task-chk"
+                               checked="@task.IsComplete"
+                               @onchange="() => ToggleComplete(task)" />
+                        <span class="task-text">@task.TaskDescription</span>
+                        <span class="task-date">@task.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        <button class="btn-del" @onclick="() => DeleteTask(task)">Delete</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 <style>
-    .todo-wrapper {
-        max-width: 800px;
-        margin: 30px auto;
-        padding: 30px;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-        font-family: 'Segoe UI', sans-serif;
+    .page-bg {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 100%);
     }
-
-    .todo-header {
-        text-align: center;
-        margin-bottom: 24px;
+    .topbar {
+        background: rgba(255,255,255,0.9);
+        padding: 14px 28px;
+        border-bottom: 1px solid rgba(0,0,0,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
-
-        .todo-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-
-    .subtitle {
-        color: #888;
-        font-size: 14px;
+    .topbar-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1a1a2e;
     }
-
-    .todo-input-row {
+    .db-badge {
+        background: #4a90e2;
+        color: white;
+        font-size: 12px;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    .content-area {
+        padding: 28px;
+        max-width: 860px;
+        margin: 0 auto;
+    }
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 20px;
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-value {
+        font-size: 28px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+    .stat-card.blue .stat-value { color: #4a90e2; }
+    .stat-card.green .stat-value { color: #27ae60; }
+    .stat-card.red .stat-value { color: #e74c3c; }
+    .input-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(0,0,0,0.06);
         display: flex;
         gap: 10px;
         margin-bottom: 16px;
+        align-items: center;
     }
-
-    .todo-input {
+    .task-input {
         flex: 1;
-        padding: 12px 16px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 15px;
-        transition: border 0.2s;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 11px 16px;
+        font-size: 14px;
         outline: none;
+        transition: border 0.2s;
     }
-
-        .todo-input:focus {
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 3px rgba(74,144,226,0.15);
-        }
-
+    .task-input:focus { border-color: #4a90e2; }
     .btn-add {
-        padding: 12px 20px;
         background: #4a90e2;
         color: white;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
+        padding: 11px 20px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
         white-space: nowrap;
-        transition: background 0.2s;
     }
-
-        .btn-add:hover {
-            background: #357abd;
-        }
-
+    .btn-add:hover { background: #357abd; }
     .btn-clear {
-        padding: 12px 20px;
         background: #e74c3c;
         color: white;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
+        padding: 11px 18px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
         white-space: nowrap;
-        transition: background 0.2s;
     }
-
-        .btn-clear:hover {
-            background: #c0392b;
-        }
-
-    .task-stats {
-        display: flex;
-        gap: 24px;
-        padding: 12px 16px;
-        background: #f0f4ff;
-        border-radius: 10px;
-        margin-bottom: 16px;
-        font-size: 14px;
-        color: #555;
+    .btn-clear:hover { background: #c0392b; }
+    .task-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.06);
+        overflow: hidden;
     }
-
-    .task-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .task-item {
+    .task-row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
-        margin-bottom: 8px;
-        background: #fafafa;
-        border: 1px solid #eee;
-        border-radius: 10px;
-        transition: background 0.2s;
+        gap: 14px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #f5f5f5;
+        transition: background 0.15s;
     }
-
-        .task-item:hover {
-            background: #f0f4ff;
-        }
-
-        .task-item.completed {
-            background: #f0fff4;
-            border-color: #a8e6cf;
-        }
-
-    .task-checkbox {
-        width: 18px;
-        height: 18px;
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { background: #f8f9ff; }
+    .task-row.done { background: #f6fff8; }
+    .task-chk {
+        width: 17px;
+        height: 17px;
         cursor: pointer;
-        accent-color: #4a90e2;
+        accent-color: #27ae60;
+        flex-shrink: 0;
     }
-
     .task-text {
         flex: 1;
-        font-size: 15px;
+        font-size: 14px;
         color: #2d2d2d;
     }
-
-    .task-item.completed .task-text {
+    .task-row.done .task-text {
         text-decoration: line-through;
-        color: #aaa;
+        color: #bbb;
     }
-
     .task-date {
         font-size: 12px;
-        color: #bbb;
+        color: #ccc;
         white-space: nowrap;
     }
-
-    .btn-delete {
-        padding: 6px 14px;
-        background: #ff6b6b;
-        color: white;
-        border: none;
-        border-radius: 8px;
+    .btn-del {
+        padding: 5px 14px;
+        background: #fff0f0;
+        color: #e74c3c;
+        border: 1px solid #ffd0d0;
+        border-radius: 6px;
+        font-size: 12px;
         cursor: pointer;
-        font-size: 13px;
-        transition: background 0.2s;
     }
-
-        .btn-delete:hover {
-            background: #e05555;
-        }
-
-    .empty-state {
+    .btn-del:hover { background: #ffe0e0; }
+    .empty-box {
         text-align: center;
-        padding: 40px;
-        color: #aaa;
-        font-size: 16px;
-        background: #fafafa;
-        border-radius: 10px;
-        border: 2px dashed #e0e0e0;
+        padding: 50px 20px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.06);
+        color: #ccc;
+        font-size: 15px;
     }
+    .empty-box p { margin-top: 12px; }
 </style>
 
 @code {

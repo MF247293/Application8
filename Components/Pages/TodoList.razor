@@ -43,13 +43,11 @@ else
     private string newTask = "";
     private List<TaskItem> tasks = new();
 
-    // Loads tasks from DB when page opens
     protected override void OnInitialized()
     {
         tasks = Db.Tasks.ToList();
     }
 
-    // ADD: saves new task to DB
     private void AddTask()
     {
         if (!string.IsNullOrWhiteSpace(newTask))
@@ -61,13 +59,12 @@ else
                 CreatedAt = DateTime.Now
             };
             Db.Tasks.Add(item);
-            Db.SaveChanges();        // writes to database
-            tasks = Db.Tasks.ToList(); // refresh list from DB
+            Db.SaveChanges();        
+            tasks = Db.Tasks.ToList();
             newTask = "";
         }
     }
 
-    // UPDATE: toggles complete status in DB
     private void ToggleComplete(TaskItem task)
     {
         task.IsComplete = !task.IsComplete;
@@ -84,11 +81,10 @@ else
         tasks = Db.Tasks.ToList();
     }
 
-    // CLEAR ALL: removes everything from DB
     private void ClearAll()
     {
         Db.Tasks.RemoveRange(Db.Tasks);
-        Db.SaveChanges();            // clears entire table
+        Db.SaveChanges();            
         tasks.Clear();
     }
 }

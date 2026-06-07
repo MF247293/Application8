@@ -1,9 +1,10 @@
 ﻿@page "/todo"
+@rendermode InteractiveServer
 @using Application08_TodoDB.Models
 @using Application08_TodoDB.Data
 @inject AppDbContext Db
 
-<h3>To-Do List</h3>
+<h3 class="todo-title">To-Do List</h3>
 
 <div class="todo-input-row">
     <input type="text"
@@ -11,8 +12,8 @@
            @bind:event="oninput"
            placeholder="Enter a task..."
            class="todo-input" />
-    <button class="btn btn-primary" @onclick="AddTask">Add Task</button>
-    <button class="btn btn-danger" @onclick="ClearAll">Clear All</button>
+    <button class="btn-add" @onclick="AddTask">Add Task</button>
+    <button class="btn-clear" @onclick="ClearAll">Clear All</button>
 </div>
 
 @if (tasks.Count == 0)
@@ -28,16 +29,121 @@ else
                 <input type="checkbox"
                        checked="@task.IsComplete"
                        @onchange="() => ToggleComplete(task)" />
-                @task.TaskDescription
-
-                <button class="btn btn-sm btn-danger"
-                        @onclick="() => DeleteTask(task)">
-                    Delete
+                <span class="@(task.IsComplete ? "task-done" : "")">
+                    @task.TaskDescription
+                </span>
+                <button class="btn-delete" @onclick="() => DeleteTask(task)">
+                    🗑 Delete
                 </button>
             </li>
         }
     </ul>
 }
+
+<style>
+    .todo-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1.2rem;
+        color: #2d2d2d;
+    }
+
+    .todo-input-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1.2rem;
+        align-items: center;
+    }
+
+    .todo-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+    .todo-input:focus {
+        border-color: #4a90e2;
+    }
+
+    .btn-add {
+        padding: 10px 20px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-add:hover {
+        background-color: #357abd;
+    }
+
+    .btn-clear {
+        padding: 10px 20px;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-clear:hover {
+        background-color: #c0392b;
+    }
+
+    .task-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .task-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        font-size: 15px;
+    }
+
+    .task-item:hover {
+        background: #f0f4ff;
+    }
+
+    .task-done {
+        text-decoration: line-through;
+        color: #aaa;
+    }
+
+    .btn-delete {
+        margin-left: auto;
+        padding: 6px 12px;
+        background-color: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .btn-delete:hover {
+        background-color: #e05555;
+    }
+
+    .no-tasks {
+        color: #999;
+        font-style: italic;
+        font-size: 15px;
+    }
+</style>
 
 @code {
     private string newTask = "";
@@ -59,7 +165,7 @@ else
                 CreatedAt = DateTime.Now
             };
             Db.Tasks.Add(item);
-            Db.SaveChanges();        
+            Db.SaveChanges();
             tasks = Db.Tasks.ToList();
             newTask = "";
         }
@@ -69,22 +175,21 @@ else
     {
         task.IsComplete = !task.IsComplete;
         Db.Tasks.Update(task);
-        Db.SaveChanges();            // updates database
+        Db.SaveChanges();
         tasks = Db.Tasks.ToList();
     }
 
-    // DELETE: removes one task from DB
     private void DeleteTask(TaskItem task)
     {
         Db.Tasks.Remove(task);
-        Db.SaveChanges();            // deletes from database
+        Db.SaveChanges();
         tasks = Db.Tasks.ToList();
     }
 
     private void ClearAll()
     {
         Db.Tasks.RemoveRange(Db.Tasks);
-        Db.SaveChanges();            
+        Db.SaveChanges();
         tasks.Clear();
     }
 }

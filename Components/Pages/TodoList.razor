@@ -1,14 +1,16 @@
 ﻿@page "/todo"
-@rendermode InteractiveServer
+@using Application08_TodoDB.Models
+@using Application08_TodoDB.Data
+@inject AppDbContext Db
 
 <h3>To-Do List</h3>
 
 <div class="todo-input-row">
     <input type="text"
-           class="todo-input"
+           @bind="newTask"
+           @bind:event="oninput"
            placeholder="Enter a task..."
-           value="@newTask"
-           @oninput="@(e => newTask = e.Value.ToString())" />
+           class="todo-input" />
     <button class="btn btn-primary" @onclick="AddTask">Add Task</button>
     <button class="btn btn-danger" @onclick="ClearAll">Clear All</button>
 </div>
@@ -22,26 +24,71 @@ else
     <ul class="task-list">
         @foreach (var task in tasks)
         {
-            <li class="task-item">@task</li>
+            <li class="task-item">
+                <input type="checkbox"
+                       checked="@task.IsComplete"
+                       @onchange="() => ToggleComplete(task)" />
+                @task.TaskDescription
+
+                <button class="btn btn-sm btn-danger"
+                        @onclick="() => DeleteTask(task)">
+                    Delete
+                </button>
+            </li>
         }
     </ul>
 }
 
 @code {
-    private string newTask = string.Empty;
-    private List<string> tasks = new List<string>();
+    private string newTask = "";
+    private List<TaskItem> tasks = new();
 
+    // Loads tasks from DB when page opens
+    protected override void OnInitialized()
+    {
+        tasks = Db.Tasks.ToList();
+    }
+
+    // ADD: saves new task to DB
     private void AddTask()
     {
         if (!string.IsNullOrWhiteSpace(newTask))
         {
-            tasks.Add(newTask.Trim());
-            newTask = string.Empty;
+            var item = new TaskItem
+            {
+                TaskDescription = newTask.Trim(),
+                IsComplete = false,
+                CreatedAt = DateTime.Now
+            };
+            Db.Tasks.Add(item);
+            Db.SaveChanges();        // writes to database
+            tasks = Db.Tasks.ToList(); // refresh list from DB
+            newTask = "";
         }
     }
 
+    // UPDATE: toggles complete status in DB
+    private void ToggleComplete(TaskItem task)
+    {
+        task.IsComplete = !task.IsComplete;
+        Db.Tasks.Update(task);
+        Db.SaveChanges();            // updates database
+        tasks = Db.Tasks.ToList();
+    }
+
+    // DELETE: removes one task from DB
+    private void DeleteTask(TaskItem task)
+    {
+        Db.Tasks.Remove(task);
+        Db.SaveChanges();            // deletes from database
+        tasks = Db.Tasks.ToList();
+    }
+
+    // CLEAR ALL: removes everything from DB
     private void ClearAll()
     {
+        Db.Tasks.RemoveRange(Db.Tasks);
+        Db.SaveChanges();            // clears entire table
         tasks.Clear();
     }
 }
